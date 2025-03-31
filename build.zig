@@ -16,18 +16,24 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{ .preferred_optimize_mode = .ReleaseSafe });
 
     const exe = b.addExecutable(.{
-        .name = "d2rl-prototype",
-        .root_source_file = b.path("src/main.zig"),
-        .target = target,
-        .optimize = optimize,
+        .name = "diab2gcu_prototype",
+        .root_module = b.createModule(.{
+            // `root_source_file` is the Zig "entry point" of the module. If a module
+            // only contains e.g. external object files, you can make this `null`.
+            // In this case the main source file is merely a path, however, in more
+            // complicated build scripts, this could be a generated file.
+            .root_source_file = b.path("src/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
     if (target.query.isNativeOs() and target.result.os.tag != .windows) {
-        exe.linkSystemLibrary("curses");
+        exe.linkSystemLibrary("ncursesw");
         exe.linkLibC();
-    } else exe.linkLibrary(b.dependency("pdcurses", .{
+    } else exe.linkLibrary(b.lazyDependency("pdcurses", .{
         .optimize = .ReleaseFast,
         .target = target,
-    }).artifact("zig-pdcurses"));
+    }).?.artifact("zig-pdcurses"));
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
