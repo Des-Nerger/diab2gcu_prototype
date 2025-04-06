@@ -21,8 +21,9 @@ objects: []struct {
 map: [][]usize,
 
 pub fn deinit() void {
-    g.map.list.deinit();
-    g.pl, g.map.list, g.map.width, g.map.height = .{undefined} ** 4;
+    // g.map.list.deinit();
+    g.allocator.free(g.map.tiles);
+    g.pl, g.map.tiles, g.map.width = .{undefined} ** 3;
 }
 
 pub fn init() !void {
@@ -49,22 +50,27 @@ pub fn init() !void {
     defer parsed.deinit();
 
     // Never ever use `parsed.value.height`, it's wrong!
-    g.map.width, g.map.height = .{ @intCast(parsed.value.size.width), @intCast(parsed.value.map.len) };
-    g.map.list = try @TypeOf(g.map.list).initCapacity(g.allocator, @intCast(g.map.width * g.map.height));
+    g.map.width = @intCast(parsed.value.size.width);
+    g.map.tiles = try g.allocator.alloc(
+        meta.Child(@TypeOf(g.map.tiles)),
+        parsed.value.map.len * @as(usize, @intCast(g.map.width)),
+    );
+    var effective_len: usize = 0;
     for (parsed.value.map) |line| {
-        var i, var remaining = [_]usize{ 0, @intCast(g.map.width) };
+        var i, var line_remaining = [_]usize{ 0, @intCast(g.map.width) };
         while (true) : (i += 1) {
             const run_len = if (i < line.len)
                 line[i]
             else if (i == line.len)
-                remaining
+                line_remaining
             else
                 break;
-            g.map.list.appendNTimesAssumeCapacity(&(if (i % 2 == 0)
-                game.Tile.wall
-            else
-                game.Tile.floor), run_len);
-            remaining -= run_len;
+            @memset(
+                g.map.tiles[effective_len..][0..run_len],
+                &(if (i % 2 == 0) game.Tile.wall else game.Tile.floor),
+            );
+            effective_len += run_len;
+            line_remaining -= run_len;
         }
     }
 
@@ -75,7 +81,7 @@ pub fn init() !void {
 
     for (parsed.value.objects) |obj| {
         if (mem.eql(u8, "exit", obj.type)) {
-            g.pl = player.init(.{ .x = obj.x + 1, .y = obj.y + 1 });
+            g.pl = player.init(.{ .x = obj.x + @TypeOf(g.pl).radius, .y = obj.y + @TypeOf(g.pl).radius });
             return;
         }
     }
@@ -90,6 +96,7 @@ const game = @import("game.zig");
 const io = std.io;
 const json = std.json;
 const mem = std.mem;
+const meta = std.meta;
 const player = @import("player.zig");
 const process = std.process;
 const std = @import("std");

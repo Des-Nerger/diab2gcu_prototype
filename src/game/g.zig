@@ -3,6 +3,7 @@
 pub var mouse: game.Position = undefined;
 pub var cam: game.Position = undefined;
 pub var pl: game.Entity = undefined;
+pub var ent_path: game.Entity.Path = undefined;
 pub var allocator: mem.Allocator = undefined;
 pub const if_xterm = struct {
     pub var is: bool = undefined;
@@ -25,28 +26,31 @@ pub const if_xterm = struct {
     }
 };
 pub const map = struct {
-    pub var list: std.ArrayList(*const game.Tile) = undefined;
+    pub var tiles: []*const game.Tile = undefined;
     pub var width: c_int = undefined;
-    pub var height: c_int = undefined;
-    pub fn tile(y: c_int, x: c_int) meta.Child(@TypeOf(list.items)) {
-        if (0 > y or y >= g.map.height or 0 > x or x >= g.map.width) return &game.Tile.out_of_map;
-        return map.list.items[@intCast(y * map.width + x)];
+
+    pub fn tile(y: c_int, x: c_int) meta.Child(@TypeOf(tiles)) {
+        var idx: usize = undefined;
+        return if (0 > x or x >= g.map.width or blk: {
+            idx = @intCast(y * map.width + x);
+            break :blk 0 > idx or idx >= map.tiles.len;
+        })
+            &game.Tile.out_of_map
+        else
+            map.tiles[idx];
     }
+
     pub fn draw() void {
-        var dy: c_int = 0;
-        while (dy < g.stdscr.height) : (dy += 1) {
-            var dx: c_int = 0;
-            while (dx < g.stdscr.width) : (dx += 1) {
-                const y, const x = .{ g.cam.y + dy, g.cam.x + dx };
-                assert(c.OK == c.mvaddch(dy, dx, @intCast(g.map.tile(y, x).wchar)) or
-                    (dx == g.stdscr.width - 1 and dy == g.stdscr.height - 1));
+        var scr = game.Position{ .x = undefined, .y = 0 };
+        while (scr.y < c.LINES) : (scr.y += 1) {
+            scr.x = 0;
+            while (scr.x < c.COLS) : (scr.x += 1) {
+                const world = scr.toWorldPos();
+                assert(c.OK == c.mvaddch(scr.y, scr.x, @intCast(g.map.tile(world.y, world.x).wchar)) or
+                    (scr.x == c.COLS - 1 and scr.y == c.LINES - 1));
             }
         }
     }
-};
-pub const stdscr = struct {
-    pub var width: c_int = undefined;
-    pub var height: c_int = undefined;
 };
 
 const ascii = std.ascii;
