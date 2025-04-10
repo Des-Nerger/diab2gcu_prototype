@@ -50,9 +50,9 @@ pub const Tile = struct {
     wchar: c.wchar_t,
     is_walkable: bool,
 
-    pub const wall = Self{ .wchar = '#', .is_walkable = false };
-    pub const floor = Self{ .wchar = '.', .is_walkable = true };
-    pub const out_of_map = Self{ .wchar = 'X', .is_walkable = false };
+    pub const wall = Self{ .wchar = common.char.wall, .is_walkable = false };
+    pub const floor = Self{ .wchar = common.char.floor, .is_walkable = true };
+    pub const out_of_map = Self{ .wchar = common.char.out_of_map, .is_walkable = false };
 
     const Self = @This();
 };
@@ -204,6 +204,7 @@ pub fn handleInput(key: c_int) ?void {
 
 const assert = debug.assert;
 const c = @import("c.zig").c;
+const common = @import("common");
 const debug = std.debug;
 const g = @import("g.zig");
 const game = @This();
