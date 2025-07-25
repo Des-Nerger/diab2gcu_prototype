@@ -1,5 +1,3 @@
-pub usingnamespace std.meta;
-
 pub fn Align(alignment: comptime_int, Struct: type) type {
     var needs_reifying, var s = .{ false, @typeInfo(Struct).@"struct" };
     var fields: [s.fields.len]builtin.Type.StructField = undefined;
@@ -26,6 +24,7 @@ pub fn Align(alignment: comptime_int, Struct: type) type {
     s.fields = fields[0..];
     return @Type(.{ .@"struct" = s });
 }
+pub const eql = std.meta.eql;
 
 const builtin = std.builtin;
 const dt1 = @import("dt1.zig");

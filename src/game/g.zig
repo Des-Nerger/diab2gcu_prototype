@@ -60,6 +60,6 @@ const debug = std.debug;
 const g = @This();
 const game = @import("game.zig");
 const mem = std.mem;
-const meta = std.meta;
+const meta = @import("meta.zig");
 const process = std.process;
 const std = @import("std");

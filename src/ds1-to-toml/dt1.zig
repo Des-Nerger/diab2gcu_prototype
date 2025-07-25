@@ -4,11 +4,11 @@ pub const tile = struct {
 
         pub const Table = std.AutoHashMap(dt1.tile.Id, dt1.tile.Self);
 
-        pub fn loadAdd(ha: *Self, filepath_dt1: []const u8) !void {
+        pub fn loadAdd(ha: *@This(), filepath_dt1: []const u8) !void {
             const file = try fs.cwd().openFile(filepath_dt1, .{});
             defer file.close();
 
-            var br = io.bufferedReader(file.reader());
+            var br = io.bufferedReader(file.deprecatedReader());
             var cr = io.countingReader(br.reader());
             const r = cr.reader();
 
@@ -47,8 +47,6 @@ pub const tile = struct {
             }
             assert(cr.bytes_read == block.first.file_offset);
         }
-
-        const Self = @This();
     };
     pub const Id = meta.Align(@alignOf(i32), extern struct {
         orientation_type: dt1.tile.OrientationType,
@@ -59,56 +57,54 @@ pub const tile = struct {
         floor = 0,
         _,
     };
-    pub usingnamespace struct {
-        pub const Self = meta.Align(1, extern struct {
-            light_direction: i32,
-            roof_height: u16,
-            material_flags: packed struct(u16) {
-                is_lava: bool,
-                unknown_bit: u1,
-                is_snow: bool,
-                unknown_u5: u5,
+    pub const Self = meta.Align(1, extern struct {
+        light_direction: i32,
+        roof_height: u16,
+        material_flags: packed struct(u16) {
+            is_lava: bool,
+            unknown_bit: u1,
+            is_snow: bool,
+            unknown_u5: u5,
 
-                is_other: bool,
-                is_water: bool,
-                is_wood_object: bool,
-                is_inside_stone: bool,
-                is_outside_stone: bool,
-                is_dirt: bool,
-                is_sand: bool,
-                is_wood: bool,
-            },
-            total_height: i32,
-            width: i32,
-            zero_height_to_bottom: i32,
-            id: dt1.tile.Id,
-            rarity_or_frame_idx: i32,
-            transparent_color_rgb24: i32,
-            subtile_flags: [
-                dt1.tile.subtiles_per_dimension *
-                    dt1.tile.subtiles_per_dimension
-            ]packed struct(u8) {
-                is_block_walk: bool,
-                is_block_light_and_line_of_sight: bool,
-                is_block_jump_and_teleport: bool,
-                is_block_player_walk: bool,
-                unknown_bit: u1,
-                is_block_light_only: bool,
-                unknown_u2: u2,
-            },
-            zero_byte: u8,
-            zero_cache_idx: u16,
-            zero_u32: u32,
-            block: extern struct {
-                first: extern struct { file_offset: i32 },
-                size: i32,
-                count: i32,
-                zero_ptr: i32,
-            },
-            usually_zero_name_ptr: i32,
-            zero_lru_cache_block_ptr: i32,
-        });
-    };
+            is_other: bool,
+            is_water: bool,
+            is_wood_object: bool,
+            is_inside_stone: bool,
+            is_outside_stone: bool,
+            is_dirt: bool,
+            is_sand: bool,
+            is_wood: bool,
+        },
+        total_height: i32,
+        width: i32,
+        zero_height_to_bottom: i32,
+        id: dt1.tile.Id,
+        rarity_or_frame_idx: i32,
+        transparent_color_rgb24: i32,
+        subtile_flags: [
+            dt1.tile.subtiles_per_dimension *
+                dt1.tile.subtiles_per_dimension
+        ]packed struct(u8) {
+            is_block_walk: bool,
+            is_block_light_and_line_of_sight: bool,
+            is_block_jump_and_teleport: bool,
+            is_block_player_walk: bool,
+            unknown_bit: u1,
+            is_block_light_only: bool,
+            unknown_u2: u2,
+        },
+        zero_byte: u8,
+        zero_cache_idx: u16,
+        zero_u32: u32,
+        block: extern struct {
+            first: extern struct { file_offset: i32 },
+            size: i32,
+            count: i32,
+            zero_ptr: i32,
+        },
+        usually_zero_name_ptr: i32,
+        zero_lru_cache_block_ptr: i32,
+    });
     pub const subtiles_per_dimension = 5;
 };
 

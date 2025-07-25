@@ -14,7 +14,7 @@ pub fn init(
     const file = try fs.cwd().openFile(filepath_ds1, .{});
     defer file.close();
 
-    var br = io.bufferedReader(file.reader());
+    var br = io.bufferedReader(file.deprecatedReader());
     const r = br.reader();
 
     const version = try r.readInt(i32, .little);
@@ -31,7 +31,11 @@ pub fn init(
         const file_stem = fs.path.stem(filepath_ds1);
         const rows = cells_layer.rows * dt1.tile.subtiles_per_dimension;
         const len = .{ .desc = rows * @sizeOf([]u8), .chars = rows * lp.columns + file_stem.len };
-        const alloc_bytes = try allocator.alignedAlloc(u8, @alignOf([]u8), len.desc + len.chars);
+        const alloc_bytes = try allocator.alignedAlloc(
+            u8,
+            .fromByteUnits(@alignOf([]u8)),
+            len.desc + len.chars,
+        );
         const desc = mem.bytesAsSlice([]u8, alloc_bytes[0..len.desc]);
         var unused_chars = alloc_bytes[len.desc..];
         @memset(unused_chars[0 .. unused_chars.len - file_stem.len], common.char.out_of_map);
@@ -80,7 +84,7 @@ pub fn init(
                 const maybe_subtile_flags = if (tile_table.getPtr(tile_id)) |tile|
                     tile.subtile_flags
                 else blk: {
-                    debug.print("{}\n", .{tile_id});
+                    debug.print("\"{s}\" had out-of-table {}\n", .{ lp.name, tile_id });
                     break :blk null;
                 };
                 var sub_yx: usize, var char_y: usize = .{ 0, char_y0 };

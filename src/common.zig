@@ -4,7 +4,8 @@ pub fn LevelPreset(Ext: type) type {
         columns: usize,
         desc: [][]u8,
 
-        pub usingnamespace Ext;
+        pub const deinit = Ext.deinit;
+        pub const init = Ext.init;
     };
 }
 

@@ -37,7 +37,7 @@ pub fn init() !void {
 
     var levelmap_jso_line: []u8 = &.{};
     while (true) {
-        levelmap_jso_line = (try file.reader().readUntilDelimiterOrEof(buf[0..], '\n')).?;
+        levelmap_jso_line = (try file.deprecatedReader().readUntilDelimiterOrEof(buf[0..], '\n')).?;
         if (null != ascii.indexOfIgnoreCase(levelmap_jso_line, args[1])) break;
     }
     // debug.print("«{s}»\n", .{levelmap_jso_line});
@@ -79,8 +79,8 @@ pub fn init() !void {
     //     debug.print("{s}\n", .{line});
     // }
 
-    for (parsed.value.objects) |obj| {
-        if (mem.eql(u8, "exit", obj.type)) {
+    for (0.., parsed.value.objects) |i, obj| {
+        if (i == parsed.value.objects.len - 1 or mem.eql(u8, "exit", obj.type)) {
             g.pl = player.init(.{ .x = obj.x + @TypeOf(g.pl).radius, .y = obj.y + @TypeOf(g.pl).radius });
             return;
         }
@@ -96,7 +96,7 @@ const game = @import("game.zig");
 const io = std.io;
 const json = std.json;
 const mem = std.mem;
-const meta = std.meta;
+const meta = @import("meta.zig");
 const player = @import("player.zig");
 const process = std.process;
 const std = @import("std");

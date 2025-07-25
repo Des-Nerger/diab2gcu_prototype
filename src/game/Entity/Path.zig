@@ -105,5 +105,5 @@ const Self = @This();
 const g = @import("../g.zig");
 const game = @import("../game.zig");
 const math = std.math;
-const meta = std.meta;
+const meta = @import("../meta.zig");
 const std = @import("std");

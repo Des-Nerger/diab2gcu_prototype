@@ -16,7 +16,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
             .imports = &.{ common, .{
                 .name = "sam701/zig-toml",
-                .module = b.lazyDependency("toml", .{}).?.module("zig-toml"),
+                .module = b.lazyDependency("toml", .{}).?.module("toml"),
             } },
         }),
     });
@@ -33,7 +33,7 @@ pub fn build(b: *std.Build) void {
         .name = "ds1-to-toml",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/ds1-to-toml/main.zig"),
-            .target = b.resolveTargetQuery(.{ .os_tag = .windows }), // just for filepaths case-insensitivity
+            .target = target,
             .optimize = optimize,
             .link_libc = true,
             .imports = &.{common},
